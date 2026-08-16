@@ -1,0 +1,6 @@
+{
+  "name": "Garut Cerdas",
+  "description": "Platform terpadu informasi sekolah, zonasi PPDB, beasiswa, kalender pendidikan, dan panduan masa depan anak di Kabupaten Garut.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
