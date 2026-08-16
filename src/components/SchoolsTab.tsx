@@ -14,7 +14,11 @@ import {
   Sparkles,
   ArrowUpDown,
   Grid,
-  List
+  List,
+  Plus,
+  Edit3,
+  Trash2,
+  ShieldCheck
 } from 'lucide-react';
 import { School, UserProfile } from '../types';
 
@@ -24,6 +28,9 @@ interface SchoolsTabProps {
   onSelectSchool: (school: School) => void;
   onToggleFavorit: (schoolId: string) => void;
   onOpenCompare: (school?: School) => void;
+  onOpenAddSchool?: () => void;
+  onEditSchool?: (school: School) => void;
+  onDeleteSchool?: (schoolId: string) => void;
 }
 
 export const SchoolsTab: React.FC<SchoolsTabProps> = ({
@@ -31,7 +38,10 @@ export const SchoolsTab: React.FC<SchoolsTabProps> = ({
   userProfile,
   onSelectSchool,
   onToggleFavorit,
-  onOpenCompare
+  onOpenCompare,
+  onOpenAddSchool,
+  onEditSchool,
+  onDeleteSchool
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJenjang, setSelectedJenjang] = useState<string>('Semua');
@@ -141,6 +151,37 @@ export const SchoolsTab: React.FC<SchoolsTabProps> = ({
   return (
     <div className="space-y-6 pb-24 md:pb-12 animate-in fade-in duration-200">
       
+      {/* Admin Disdik Quick Action Banner */}
+      {userProfile.isAdmin && (
+        <div className="bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white rounded-3xl p-4 sm:p-5 border border-emerald-500/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500 text-white">
+                  Akses Admin Disdik
+                </span>
+                <span className="text-xs text-emerald-200">Pengelolaan Basis Data Sekolah & Kuota</span>
+              </div>
+              <p className="text-xs text-slate-200 mt-0.5">
+                Anda dapat menambah sekolah baru di 42 kecamatan Garut, atau mengedit profil & kuota PPDB sekolah terdaftar.
+              </p>
+            </div>
+          </div>
+
+          <button
+            id="btn-admin-add-school-top"
+            onClick={onOpenAddSchool}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-slate-950" />
+            <span>Tambah Sekolah Baru</span>
+          </button>
+        </div>
+      )}
+
       {/* Header Banner */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -159,6 +200,16 @@ export const SchoolsTab: React.FC<SchoolsTabProps> = ({
 
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
+            {userProfile.isAdmin && (
+              <button
+                onClick={onOpenAddSchool}
+                className="flex items-center gap-2 px-3.5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Sekolah</span>
+              </button>
+            )}
+
             <button
               id="compare-schools-header-btn"
               onClick={() => onOpenCompare()}
@@ -431,19 +482,47 @@ export const SchoolsTab: React.FC<SchoolsTabProps> = ({
 
                   {/* Card Bottom Buttons */}
                   <div className="pt-2 flex items-center gap-2">
+                    {userProfile.isAdmin && onEditSchool && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditSchool(school);
+                        }}
+                        className="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                        title="Edit Data Sekolah (Admin Disdik)"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    {userProfile.isAdmin && onDeleteSchool && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Apakah Anda yakin ingin menghapus data sekolah "${school.nama}"?`)) {
+                            onDeleteSchool(school.id);
+                          }
+                        }}
+                        className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                        title="Hapus Sekolah"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenCompare(school);
                       }}
-                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                       title="Bandingkan Sekolah Ini"
                     >
                       <Layers className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onSelectSchool(school)}
-                      className="flex-1 py-2 px-3 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1"
+                      className="flex-1 py-2 px-3 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>Lihat Detail Lengkap</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -488,18 +567,46 @@ export const SchoolsTab: React.FC<SchoolsTabProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                   <div className="text-left sm:text-right">
                     <span className="text-[10px] text-slate-400 block font-medium">TOTAL KUOTA</span>
                     <span className="font-extrabold text-blue-700 text-xs sm:text-sm">{school.kuotaPPDB.total} Siswa</span>
                   </div>
+
+                  {userProfile.isAdmin && onEditSchool && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditSchool(school);
+                      }}
+                      className="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      title="Edit Data Sekolah (Admin Disdik)"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {userProfile.isAdmin && onDeleteSchool && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm(`Apakah Anda yakin ingin menghapus data sekolah "${school.nama}"?`)) {
+                          onDeleteSchool(school.id);
+                        }
+                      }}
+                      className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      title="Hapus Sekolah"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
 
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleFavorit(school.id);
                     }}
-                    className={`p-2 rounded-xl transition-all ${
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${
                       isFavorited ? 'bg-rose-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                     }`}
                   >
@@ -508,7 +615,7 @@ export const SchoolsTab: React.FC<SchoolsTabProps> = ({
 
                   <button
                     onClick={() => onSelectSchool(school)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-1"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-1 cursor-pointer"
                   >
                     <span>Detail</span>
                     <ChevronRight className="w-3.5 h-3.5" />

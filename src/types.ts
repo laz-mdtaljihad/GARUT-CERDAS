@@ -170,6 +170,15 @@ export interface Announcement {
   nomorSurat?: string;
 }
 
+export type UserRole = 
+  | 'Orang Tua' 
+  | 'Siswa' 
+  | 'Calon Mahasiswa' 
+  | 'Pendidik' 
+  | 'Umum' 
+  | 'Admin Disdik' 
+  | 'Operator Sekolah';
+
 export interface ChildData {
   id: string;
   nama: string;
@@ -183,10 +192,19 @@ export interface ChildData {
 }
 
 export interface UserProfile {
+  id?: string;
   nama: string;
-  role: 'Orang Tua' | 'Siswa' | 'Calon Mahasiswa' | 'Pendidik' | 'Umum';
-  noHp?: string;
+  role: UserRole;
   email?: string;
+  loginProvider?: 'google' | 'disdik_admin' | 'guest';
+  isAdmin?: boolean;
+  isOperator?: boolean;
+  nip?: string;
+  jabatan?: string;
+  instansiDinas?: string;
+  avatarUrl?: string;
+  sekolahAsal?: string;
+  noHp?: string;
   kecamatanDomisili: string;
   kelurahanDesa?: string;
   dataAnak: ChildData[];
