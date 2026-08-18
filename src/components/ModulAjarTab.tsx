@@ -24,7 +24,10 @@ import {
   Check, 
   Tag,
   ShieldCheck,
-  FileDown
+  FileDown,
+  Plus,
+  Edit3,
+  Trash2
 } from 'lucide-react';
 import { ModulAjar, UserProfile } from '../types';
 import { exportModulAjarToDoc } from '../utils/exportModulAjarDoc';
@@ -33,12 +36,18 @@ interface ModulAjarTabProps {
   modulList: ModulAjar[];
   onSelectModul: (modul: ModulAjar) => void;
   userProfile: UserProfile;
+  onOpenAddModul?: () => void;
+  onEditModul?: (modul: ModulAjar) => void;
+  onDeleteModul?: (modulId: string) => void;
 }
 
 export const ModulAjarTab: React.FC<ModulAjarTabProps> = ({
   modulList,
   onSelectModul,
-  userProfile
+  userProfile,
+  onOpenAddModul,
+  onEditModul,
+  onDeleteModul
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJenjang, setSelectedJenjang] = useState<string>('Semua');
@@ -241,6 +250,17 @@ export const ModulAjarTab: React.FC<ModulAjarTabProps> = ({
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">
+            {userProfile.isAdmin && onOpenAddModul && (
+              <button
+                id="btn-admin-publish-modul-hero"
+                onClick={onOpenAddModul}
+                className="px-4 py-2.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-slate-950" />
+                <span>+ Terbitkan Modul Ajar Resmi</span>
+              </button>
+            )}
+
             <button
               id="btn-open-ai-generator"
               onClick={() => setShowAIGenerator(!showAIGenerator)}
@@ -617,6 +637,34 @@ export const ModulAjarTab: React.FC<ModulAjarTabProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    {userProfile.isAdmin && onEditModul && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditModul(modul);
+                        }}
+                        className="p-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold transition-all cursor-pointer"
+                        title="Edit Modul Ajar (Admin Disdik)"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
+                    {userProfile.isAdmin && onDeleteModul && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Hapus modul "${modul.judul}"?`)) {
+                            onDeleteModul(modul.id);
+                          }
+                        }}
+                        className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition-all cursor-pointer"
+                        title="Hapus Modul Ajar"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
                     <button
                       id={`btn-quick-download-${modul.id}`}
                       onClick={(e) => handleDownloadDirect(e, modul)}

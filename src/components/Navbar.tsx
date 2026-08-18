@@ -348,21 +348,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="navbar-auth-btn"
                 onClick={onOpenAuthModal}
                 className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                  userProfile.isAdmin
+                  userProfile?.isAdmin
                     ? 'bg-gradient-to-r from-emerald-800 to-teal-800 text-white hover:from-emerald-900 hover:to-teal-900 ring-2 ring-emerald-400/30'
-                    : userProfile.loginProvider === 'google'
+                    : userProfile?.loginProvider === 'google'
                     ? 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 ring-1 ring-blue-500/20'
                     : 'bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white'
                 }`}
-                title={userProfile.isAdmin ? 'Mode Admin Disdik Aktif - Klik untuk kelola sesi' : 'Masuk dengan Gmail / Portal Admin'}
+                title={userProfile?.isAdmin ? 'Mode Admin Disdik Aktif - Klik untuk kelola sesi' : 'Masuk dengan Gmail / Portal Admin'}
               >
-                {userProfile.isAdmin ? (
+                {userProfile?.isAdmin ? (
                   <>
                     <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
                     <span className="hidden sm:inline font-black">ADMIN DISDIK</span>
                     <span className="sm:hidden font-black">ADMIN</span>
                   </>
-                ) : userProfile.loginProvider === 'google' ? (
+                ) : userProfile?.loginProvider === 'google' ? (
                   <>
                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

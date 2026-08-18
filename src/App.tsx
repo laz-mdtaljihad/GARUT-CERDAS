@@ -43,11 +43,17 @@ import { AnnouncementsTab } from './components/AnnouncementsTab';
 import { ProfileTab } from './components/ProfileTab';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { QuickSearchModal } from './components/QuickSearchModal';
+import { AuthModal } from './components/AuthModal';
+import { AdminSchoolModal } from './components/AdminSchoolModal';
+import { AdminModulModal } from './components/AdminModulModal';
+import { AdminAnnouncementModal } from './components/AdminAnnouncementModal';
 
 const DEFAULT_PROFILE: UserProfile = {
   nama: 'Keluarga Bp. Panji Wafa',
   role: 'Orang Tua',
+  email: 'panji.wafa@gmail.com',
   kecamatanDomisili: 'Tarogong Kidul',
+  isAdmin: false,
   favoritSekolah: ['sman-1-garut', 'smkn-1-garut', 'smpn-1-garut'],
   favoritBeasiswa: ['beasiswa-garut-cerdas-2026', 'beasiswa-kip-kuliah-2026'],
   dataAnak: [
@@ -138,10 +144,23 @@ export default function App() {
   const [isQuickSearchOpen, setIsQuickSearchOpen] = useState<boolean>(false);
   const [selectedSchoolForQA, setSelectedSchoolForQA] = useState<School | null>(null);
 
-  // Sync to local storage
+  // Authentication & Admin CRUD Modals
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isAddSchoolModalOpen, setIsAddSchoolModalOpen] = useState<boolean>(false);
+  const [editingSchool, setEditingSchool] = useState<School | null>(null);
+  const [isAddModulModalOpen, setIsAddModulModalOpen] = useState<boolean>(false);
+  const [editingModul, setEditingModul] = useState<ModulAjar | null>(null);
+  const [isAddAnnouncementModalOpen, setIsAddAnnouncementModalOpen] = useState<boolean>(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+
+  // Sync datasets to local storage
   useEffect(() => {
     localStorage.setItem('gc_nav_position', navPosition);
   }, [navPosition]);
+
+  useEffect(() => {
+    localStorage.setItem('gc_schools', JSON.stringify(schools));
+  }, [schools]);
 
   useEffect(() => {
     localStorage.setItem('gc_profile', JSON.stringify(userProfile));
@@ -150,6 +169,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('gc_modul_ajar', JSON.stringify(modulList));
   }, [modulList]);
+
+  useEffect(() => {
+    localStorage.setItem('gc_announcements', JSON.stringify(announcements));
+  }, [announcements]);
 
   useEffect(() => {
     localStorage.setItem('gc_questions', JSON.stringify(questions));
@@ -169,6 +192,16 @@ export default function App() {
 
   const toggleNavPosition = () => {
     setNavPosition(prev => prev === 'top' ? 'sidebar' : 'top');
+  };
+
+  // Handlers for authentication
+  const handleLoginSuccess = (profile: UserProfile) => {
+    setUserProfile(profile);
+  };
+
+  const handleLogout = () => {
+    setUserProfile(DEFAULT_PROFILE);
+    localStorage.setItem('gc_profile', JSON.stringify(DEFAULT_PROFILE));
   };
 
   // Handlers for favorites
@@ -206,6 +239,78 @@ export default function App() {
     setActiveTab('tanya');
   };
 
+  // ===================== CRUD HANDLERS (ADMIN DISDIK & OPERATOR) =====================
+  
+  // 1. Schools CRUD
+  const handleSaveSchool = (savedSchool: School) => {
+    setSchools(prev => {
+      const index = prev.findIndex(s => s.id === savedSchool.id);
+      if (index >= 0) {
+        const updated = [...prev];
+        updated[index] = savedSchool;
+        return updated;
+      }
+      return [savedSchool, ...prev];
+    });
+    setEditingSchool(null);
+  };
+
+  const handleDeleteSchool = (schoolId: string) => {
+    setSchools(prev => prev.filter(s => s.id !== schoolId));
+  };
+
+  const handleOpenEditSchool = (school: School) => {
+    setEditingSchool(school);
+    setIsAddSchoolModalOpen(true);
+  };
+
+  // 2. Modul Ajar CRUD
+  const handleSaveModul = (savedModul: ModulAjar) => {
+    setModulList(prev => {
+      const index = prev.findIndex(m => m.id === savedModul.id);
+      if (index >= 0) {
+        const updated = [...prev];
+        updated[index] = savedModul;
+        return updated;
+      }
+      return [savedModul, ...prev];
+    });
+    setEditingModul(null);
+  };
+
+  const handleDeleteModul = (modulId: string) => {
+    setModulList(prev => prev.filter(m => m.id !== modulId));
+  };
+
+  const handleOpenEditModul = (modul: ModulAjar) => {
+    setEditingModul(modul);
+    setIsAddModulModalOpen(true);
+  };
+
+  // 3. Announcements CRUD
+  const handleSaveAnnouncement = (savedAnn: Announcement) => {
+    setAnnouncements(prev => {
+      const index = prev.findIndex(a => a.id === savedAnn.id);
+      if (index >= 0) {
+        const updated = [...prev];
+        updated[index] = savedAnn;
+        return updated;
+      }
+      return [savedAnn, ...prev];
+    });
+    setEditingAnnouncement(null);
+  };
+
+  const handleDeleteAnnouncement = (id: string) => {
+    setAnnouncements(prev => prev.filter(a => a.id !== id));
+  };
+
+  const handleOpenEditAnnouncement = (ann: Announcement) => {
+    setEditingAnnouncement(ann);
+    setIsAddAnnouncementModalOpen(true);
+  };
+
+  // 4. Questions & Answers CRUD
   const handleAddQuestion = (qData: Omit<SchoolQuestion, 'id' | 'tanggalTanya' | 'status'>) => {
     const newQ: SchoolQuestion = {
       ...qData,
@@ -219,6 +324,25 @@ export default function App() {
     setQuestions(prev => [newQ, ...prev]);
   };
 
+  const handleAnswerQuestion = (questionId: string, answerText: string, responderName: string) => {
+    setQuestions(prev => prev.map(q => {
+      if (q.id === questionId) {
+        return {
+          ...q,
+          jawaban: answerText,
+          dijawabOleh: responderName,
+          status: 'Dijawab',
+          tanggalJawab: 'Hari ini'
+        };
+      }
+      return q;
+    }));
+  };
+
+  const handleDeleteQuestion = (questionId: string) => {
+    setQuestions(prev => prev.filter(q => q.id !== questionId));
+  };
+
   return (
     <div className="min-h-screen bg-slate-100/60 font-['Plus_Jakarta_Sans',sans-serif] text-slate-900 flex flex-col antialiased selection:bg-blue-600 selection:text-white">
       
@@ -229,6 +353,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         onOpenSearch={() => setIsQuickSearchOpen(true)}
         onOpenAIAssistant={() => setIsAIAssistantOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         announcements={announcements}
         navPosition={navPosition}
         onToggleNavPosition={toggleNavPosition}
@@ -252,6 +377,7 @@ export default function App() {
           setActiveTab={setActiveTab}
           onOpenSearch={() => setIsQuickSearchOpen(true)}
           onOpenAIAssistant={() => setIsAIAssistantOpen(true)}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
           announcements={announcements}
           navPosition={navPosition}
           onToggleNavPosition={toggleNavPosition}
@@ -287,6 +413,12 @@ export default function App() {
               onSelectSchool={(s) => setSelectedSchool(s)}
               onToggleFavorit={toggleFavoritSekolah}
               onOpenCompare={handleOpenCompare}
+              onOpenAddSchool={() => {
+                setEditingSchool(null);
+                setIsAddSchoolModalOpen(true);
+              }}
+              onEditSchool={handleOpenEditSchool}
+              onDeleteSchool={handleDeleteSchool}
             />
           )}
 
@@ -305,6 +437,12 @@ export default function App() {
               modulList={modulList}
               onSelectModul={(m) => setSelectedModul(m)}
               userProfile={userProfile}
+              onOpenAddModul={() => {
+                setEditingModul(null);
+                setIsAddModulModalOpen(true);
+              }}
+              onEditModul={handleOpenEditModul}
+              onDeleteModul={handleDeleteModul}
             />
           )}
 
@@ -345,12 +483,23 @@ export default function App() {
               onAddQuestion={handleAddQuestion}
               onOpenAIAssistant={() => setIsAIAssistantOpen(true)}
               selectedSchoolForQA={selectedSchoolForQA}
+              onAnswerQuestion={handleAnswerQuestion}
+              onDeleteQuestion={handleDeleteQuestion}
             />
           )}
 
           {/* TAB 9: PENGUMUMAN & BERITA */}
           {activeTab === 'pengumuman' && (
-            <AnnouncementsTab announcements={announcements} />
+            <AnnouncementsTab
+              announcements={announcements}
+              userProfile={userProfile}
+              onOpenAddAnnouncement={() => {
+                setEditingAnnouncement(null);
+                setIsAddAnnouncementModalOpen(true);
+              }}
+              onEditAnnouncement={handleOpenEditAnnouncement}
+              onDeleteAnnouncement={handleDeleteAnnouncement}
+            />
           )}
 
           {/* TAB 10: PROFIL PENGGUNA */}
@@ -364,6 +513,19 @@ export default function App() {
               onSelectScholarship={(sch) => setSelectedScholarship(sch)}
               onToggleFavoritSekolah={toggleFavoritSekolah}
               onToggleFavoritBeasiswa={toggleFavoritBeasiswa}
+              onOpenAuthModal={() => setIsAuthModalOpen(true)}
+              onOpenAddSchool={() => {
+                setEditingSchool(null);
+                setIsAddSchoolModalOpen(true);
+              }}
+              onOpenAddModul={() => {
+                setEditingModul(null);
+                setIsAddModulModalOpen(true);
+              }}
+              onOpenAddAnnouncement={() => {
+                setEditingAnnouncement(null);
+                setIsAddAnnouncementModalOpen(true);
+              }}
             />
           )}
 
@@ -378,7 +540,7 @@ export default function App() {
               <span>Portal Edukasi & Masa Depan Kabupaten Garut</span>
             </div>
             <p className="text-slate-400">
-              Dikelola bersama Dinas Pendidikan Kab. Garut • Disnakertrans Garut • Versi 2.0 (2026/2027)
+              Dikelola bersama Dinas Pendidikan Kab. Garut • Disnakertrans Garut • Terverifikasi Dapodik & Kemendikdasmen RI (2026/2027)
             </p>
           </div>
         </footer>
@@ -451,6 +613,48 @@ export default function App() {
         modul={selectedModul}
         onClose={() => setSelectedModul(null)}
         userProfile={userProfile}
+      />
+
+      {/* MODAL 7: AUTHENTICATION (ADMIN DISDIK & GOOGLE GMAIL SIGN-IN) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        userProfile={userProfile}
+        onLogout={handleLogout}
+      />
+
+      {/* MODAL 8: ADMIN ADD / EDIT SCHOOL */}
+      <AdminSchoolModal
+        isOpen={isAddSchoolModalOpen}
+        onClose={() => {
+          setIsAddSchoolModalOpen(false);
+          setEditingSchool(null);
+        }}
+        onSaveSchool={handleSaveSchool}
+        schoolToEdit={editingSchool}
+      />
+
+      {/* MODAL 9: ADMIN ADD / EDIT MODUL AJAR */}
+      <AdminModulModal
+        isOpen={isAddModulModalOpen}
+        onClose={() => {
+          setIsAddModulModalOpen(false);
+          setEditingModul(null);
+        }}
+        onSaveModul={handleSaveModul}
+        modulToEdit={editingModul}
+      />
+
+      {/* MODAL 10: ADMIN ADD / EDIT ANNOUNCEMENT */}
+      <AdminAnnouncementModal
+        isOpen={isAddAnnouncementModalOpen}
+        onClose={() => {
+          setIsAddAnnouncementModalOpen(false);
+          setEditingAnnouncement(null);
+        }}
+        onSaveAnnouncement={handleSaveAnnouncement}
+        announcementToEdit={editingAnnouncement}
       />
 
     </div>

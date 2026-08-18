@@ -332,17 +332,17 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             <button
               onClick={onOpenAuthModal}
               className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer shadow-2xs ${
-                userProfile.isAdmin
+                userProfile?.isAdmin
                   ? 'bg-gradient-to-r from-emerald-800 to-teal-800 text-white hover:from-emerald-900'
                   : 'bg-white hover:bg-slate-100 border border-slate-300 text-slate-700'
               }`}
             >
-              {userProfile.isAdmin ? (
+              {userProfile?.isAdmin ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
                   <span>Kelola Akun Admin Disdik</span>
                 </>
-              ) : userProfile.loginProvider === 'google' ? (
+              ) : userProfile?.loginProvider === 'google' ? (
                 <>
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

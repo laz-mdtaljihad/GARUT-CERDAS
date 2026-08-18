@@ -19,18 +19,38 @@ import { UserProfile, UserRole } from '../types';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentUser: UserProfile;
-  onLogin: (profile: UserProfile) => void;
+  currentUser?: UserProfile;
+  userProfile?: UserProfile;
+  onLogin?: (profile: UserProfile) => void;
+  onLoginSuccess?: (profile: UserProfile) => void;
   onLogout: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  currentUser,
+  currentUser: propCurrentUser,
+  userProfile: propUserProfile,
   onLogin,
+  onLoginSuccess,
   onLogout
 }) => {
+  const currentUser: UserProfile = propCurrentUser || propUserProfile || {
+    nama: 'Warga Garut',
+    role: 'Orang Tua',
+    email: 'mdtaljihad2026@gmail.com',
+    kecamatanDomisili: 'Tarogong Kidul',
+    isAdmin: false,
+    favoritSekolah: [],
+    favoritBeasiswa: [],
+    notifikasiAktif: { ppdb: true, beasiswa: true, pengumuman: true }
+  };
+
+  const notifyLogin = (profile: UserProfile) => {
+    if (onLogin) onLogin(profile);
+    if (onLoginSuccess) onLoginSuccess(profile);
+  };
+
   const [activeTab, setActiveTab] = useState<'google' | 'admin'>('google');
 
   // Google / Gmail form state
@@ -75,7 +95,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         kecamatanDomisili: gmailKecamatan
       };
 
-      onLogin(updatedProfile);
+      notifyLogin(updatedProfile);
       setIsLoading(false);
       setSuccessToast(`Berhasil masuk dengan akun Google: ${emailToUse}`);
       setTimeout(() => {
@@ -121,7 +141,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         kecamatanDomisili: 'Garut Kota'
       };
 
-      onLogin(updatedProfile);
+      notifyLogin(updatedProfile);
       setIsLoading(false);
       setSuccessToast(`Berhasil masuk sebagai ${adminRole} (${namaAdmin})`);
       setTimeout(() => {
